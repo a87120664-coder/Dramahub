@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#090b16">
+<title>DramaHub — Creator Login 0.5</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#090b16;--panel:#121629;--panel2:#191f36;--text:#f6f7fb;--muted:#9da5bd;--gold:#f6c65b;--pink:#ed5b9b;--line:#252c46}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Arial,sans-serif}
+button,input,select,textarea{font:inherit}button{cursor:pointer}
+header{position:sticky;top:0;z-index:5;background:#090b16ed;backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.top{max-width:1180px;margin:auto;padding:14px 18px;display:flex;align-items:center;gap:16px}
+.logo{font-size:23px;font-weight:900;letter-spacing:-1px}.logo span{color:var(--gold)}
+.search{flex:1;max-width:480px;margin-left:auto;position:relative}.search input{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:12px 14px 12px 40px;color:white;outline:none}.search:before{content:"⌕";position:absolute;left:14px;top:5px;font-size:25px;color:var(--muted)}
+.avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#f6c65b,#ed5b9b);display:grid;place-items:center;color:#171321;font-weight:900}
+nav{max-width:1180px;margin:auto;padding:0 18px;display:flex;gap:8px;overflow:auto}
+nav button{background:none;border:0;color:var(--muted);padding:12px 14px;border-bottom:2px solid transparent;white-space:nowrap}
+nav button.active{color:var(--gold);border-color:var(--gold)}
+main{max-width:1180px;margin:auto;padding:22px 18px 90px}
+.hero{min-height:290px;border-radius:24px;padding:28px;display:flex;align-items:end;overflow:hidden;position:relative;background:radial-gradient(circle at 78% 20%,#a33a6b 0,transparent 28%),linear-gradient(115deg,#25254c,#642e61 55%,#d06a56)}
+.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#090b16bb,transparent 80%)}
+.hero-content{position:relative;z-index:1;max-width:520px}.eyebrow{color:var(--gold);font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+h1{font-size:clamp(30px,5vw,54px);line-height:1.02;margin:10px 0}.hero p{color:#eee;max-width:440px;line-height:1.5}
+.primary{background:var(--gold);color:#171321;border:0;border-radius:12px;padding:12px 18px;font-weight:800}.secondary{background:#ffffff18;color:white;border:1px solid #ffffff38;border-radius:12px;padding:11px 16px;font-weight:700;margin-left:8px}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin:28px 0 14px}.section-head h2{font-size:20px;margin:0}.section-head small{color:var(--muted)}
+.chips{display:flex;gap:9px;overflow:auto;padding-bottom:5px}.chip{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:99px;padding:9px 15px;white-space:nowrap}.chip.active{background:#3b3040;border-color:var(--gold);color:var(--gold)}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:17px;overflow:hidden;min-width:0}
+.poster{height:185px;position:relative;display:flex;align-items:end;padding:13px;background:linear-gradient(145deg,#44336b,#bd5579)}.poster.t2{background:linear-gradient(145deg,#173d52,#5f9b9b)}.poster.t3{background:linear-gradient(145deg,#4a1d2b,#d18b45)}.poster.t4{background:linear-gradient(145deg,#142b49,#7566ae)}.poster.t5{background:linear-gradient(145deg,#5c3328,#d69c50)}.poster.t6{background:linear-gradient(145deg,#183c36,#6c9c77)}
+.poster:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 70% 25%,#ffffff45,transparent 25%),linear-gradient(0deg,#0009,transparent 65%)}
+.poster b{position:relative;font-size:19px;text-shadow:0 2px 8px #000}.tag{position:absolute;top:10px;left:10px;background:#090b16bb;border:1px solid #ffffff30;border-radius:7px;padding:5px 8px;font-size:10px;font-weight:800}
+.card-info{padding:12px}.card-info strong{display:block;font-size:14px}.meta{color:var(--muted);font-size:12px;margin-top:5px}.card-info button{width:100%;margin-top:11px;border:1px solid var(--line);background:var(--panel2);color:white;border-radius:9px;padding:9px}
+.short-row{display:flex;gap:13px;overflow:auto;padding-bottom:5px}.short{min-width:135px;width:135px}.short .poster{height:220px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px;margin-top:18px}.panel h2{margin:0 0 7px}.muted{color:var(--muted);line-height:1.5}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:16px}.field{display:flex;flex-direction:column;gap:7px}.field.full{grid-column:1/-1}.field label{font-size:12px;color:var(--muted)}.field input,.field select,.field textarea{width:100%;background:#0b0e1b;border:1px solid var(--line);border-radius:10px;padding:12px;color:white;outline:none}.field textarea{min-height:90px;resize:vertical}
+.notice{border:1px dashed #695c3b;background:#2b2618;color:#f4d990;padding:12px;border-radius:12px;font-size:12px;line-height:1.5;margin-top:15px}
+.empty{padding:35px;text-align:center;color:var(--muted);background:var(--panel);border-radius:16px}
+footer{border-top:1px solid var(--line);padding:20px;text-align:center;color:var(--muted);font-size:12px}
+.bottom{display:none}
+@media(max-width:850px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{min-height:260px}.poster{height:170px}}
+@media(max-width:560px){.top{padding:12px}.logo{font-size:20px}.search{max-width:none}.avatar{display:none}main{padding:16px 13px 90px}.hero{padding:20px;min-height:280px}.hero p{font-size:13px}.grid{gap:10px}.poster{height:155px;padding:10px}.poster b{font-size:16px}.card-info{padding:10px}.card-info strong{font-size:13px}.section-head{margin-top:23px}.bottom{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:8;background:#101426f5;border-top:1px solid var(--line);justify-content:space-around;padding:8px 4px calc(8px + env(safe-area-inset-bottom))}.bottom button{background:none;border:0;color:var(--muted);font-size:11px;display:grid;gap:3px;justify-items:center}.bottom button.active{color:var(--gold)}.bottom span{font-size:19px}}
+@media(max-width:390px){.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}}
+
+.brand{display:flex;align-items:center;gap:9px;min-width:150px}
+.brand-mark{width:38px;height:38px;border-radius:12px;background:linear-gradient(145deg,#ffd56a,#e9a92f 55%,#e85b91);display:grid;place-items:center;box-shadow:0 5px 18px #e9a92f38;color:#171321;font-size:18px;transform:rotate(-3deg)}
+.brand-mark span{transform:rotate(3deg);margin-left:2px}
+.logo{font-size:19px;line-height:1;font-weight:950;letter-spacing:-.8px}
+.logo small{display:block;font-size:7px;letter-spacing:1.45px;color:var(--muted);margin-top:5px;font-weight:800}
+.top{padding-top:10px;padding-bottom:10px}
+.home-intro{display:flex;align-items:center;justify-content:space-between;margin:8px 0 12px}
+.home-intro h1{font-size:25px;line-height:1.1;margin:4px 0 0}
+.home-intro .eyebrow{font-size:9px;letter-spacing:1.4px}
+.live-pill{font-size:9px;color:#ff8aab;border:1px solid #71334c;background:#321b2a;border-radius:99px;padding:7px 9px;font-weight:900;white-space:nowrap}
+#desktopNav{position:sticky;top:61px;background:#090b16f5;z-index:4}
+#desktopNav button{padding:10px 13px;font-size:13px}
+main{padding-top:13px}
+.section-head{margin:17px 0 10px}
+.section-head h2{font-size:17px}
+.chips{gap:7px}
+.chip{padding:7px 12px;font-size:12px}
+.poster{height:145px}
+.card-info{padding:9px}
+.card-info button{padding:7px;margin-top:8px;font-size:12px}
+.short-row .poster{height:185px}
+@media(max-width:560px){
+ .top{gap:9px;padding:9px 12px}
+ .brand{min-width:112px;gap:7px}
+ .brand-mark{width:32px;height:32px;border-radius:10px;font-size:15px}
+ .logo{font-size:15px}
+ .logo small{font-size:6px;letter-spacing:1px;margin-top:4px}
+ .search input{padding:10px 10px 10px 34px;font-size:12px}
+ .search:before{left:11px;top:2px;font-size:22px}
+ #desktopNav{top:50px}
+ #desktopNav button{padding:9px 12px;font-size:12px}
+ main{padding:10px 13px 90px}
+ .home-intro{margin:5px 0 10px}
+ .home-intro h1{font-size:22px}
+ .home-intro .eyebrow{font-size:8px}
+ .live-pill{font-size:8px;padding:6px 7px}
+ .section-head{margin:15px 0 9px}
+ .poster{height:137px}
+ .card-info strong{font-size:12px}
+ .meta{font-size:10px}
+ .card-info button{font-size:11px}
+ .short-row .poster{height:175px}
+}
+
+
+.dashboard-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0 18px}
+.dashboard-head h1{font-size:27px;margin:5px 0}
+.admin-state{font-size:9px;font-weight:900;letter-spacing:1px;color:#f6c65b;border:1px solid #6d5930;background:#2a2418;padding:8px 10px;border-radius:99px;white-space:nowrap}
+.stats-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.stat-card{background:linear-gradient(145deg,#171d32,#101425);border:1px solid var(--line);border-radius:15px;padding:14px;min-width:0}
+.stat-card span,.stat-card small{display:block;color:var(--muted);font-size:11px}
+.stat-card b{display:block;font-size:26px;margin:6px 0;color:var(--gold)}
+.stat-card small{font-size:10px}
+.panel-title-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.panel-title-row h2{margin:0}
+.panel-title-row p{margin:5px 0 0;font-size:12px}
+.compact{margin:0;padding:8px 10px;font-size:11px}
+.submission-list{display:grid;gap:10px;margin-top:14px}
+.submission{background:#0b0e1b;border:1px solid var(--line);border-radius:13px;padding:13px;display:grid;gap:9px}
+.submission-top{display:flex;align-items:start;justify-content:space-between;gap:10px}
+.submission strong{font-size:14px}
+.submission p{font-size:11px;color:var(--muted);margin:4px 0 0;line-height:1.45}
+.status{font-size:9px;font-weight:900;border-radius:99px;padding:6px 8px;white-space:nowrap;background:#3a301d;color:#f5d17a}
+.status.approved{background:#15352a;color:#80e1ae}.status.rejected{background:#3a2028;color:#ff9aa8}
+.action-row{display:flex;gap:8px;flex-wrap:wrap}
+.action-row button{border-radius:9px;padding:8px 11px;font-size:11px;font-weight:800;border:1px solid var(--line)}
+.approve{background:#193b2e;color:#9af0bf}.reject{background:#3b2028;color:#ffabb6}
+@media(max-width:560px){.stats-grid{gap:7px}.stat-card{padding:10px}.stat-card b{font-size:22px}.stat-card span{font-size:10px}.dashboard-head h1{font-size:23px}.admin-state{font-size:8px;padding:7px}.panel{padding:15px}}
+
+
+/* Opening splash animation */
+#splash{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:radial-gradient(circle at 50% 42%,#27213d 0,#090b16 58%);transition:opacity .65s ease,visibility .65s ease}
+#splash.hide{opacity:0;visibility:hidden;pointer-events:none}
+.splash-inner{text-align:center;animation:splashPop 1s cubic-bezier(.2,.8,.2,1) both}
+.splash-logo{width:86px;height:86px;margin:0 auto 17px;border-radius:27px;display:grid;place-items:center;background:linear-gradient(145deg,#ffe18a,#e9a92f 55%,#e85b91);color:#171321;font-size:43px;font-weight:1000;box-shadow:0 0 0 10px #f6c65b12,0 0 55px #f6c65b55;animation:logoPulse 1.5s ease-in-out infinite}
+.splash-name{font-size:30px;font-weight:1000;letter-spacing:-1.5px}.splash-name span{color:var(--gold)}
+.splash-tag{margin-top:7px;color:var(--muted);font-size:10px;letter-spacing:3px;font-weight:800}
+.splash-line{width:110px;height:3px;background:#292d43;border-radius:9px;margin:25px auto 0;overflow:hidden}.splash-line:after{content:"";display:block;height:100%;width:45%;background:var(--gold);border-radius:9px;animation:loadLine 1.3s ease-in-out infinite}
+@keyframes splashPop{from{opacity:0;transform:translateY(18px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes logoPulse{50%{transform:scale(1.06);box-shadow:0 0 0 15px #f6c65b0c,0 0 70px #f6c65b70}}
+@keyframes loadLine{from{transform:translateX(-120%)}to{transform:translateX(240%)}}
+@media(prefers-reduced-motion:reduce){.splash-inner,.splash-logo,.splash-line:after{animation:none}}
+</style>
+</head>
+<body>
+<div id="splash" aria-label="DramaHub loading"><div class="splash-inner"><div class="splash-logo">▶</div><div class="splash-name">DRAMA<span>HUB</span></div><div class="splash-tag">YOUR STORY. YOUR SCREEN.</div><div class="splash-line"></div></div></div>
+<header>
+ <div class="top">
+  <div class="brand"><div class="brand-mark"><span>▶</span></div><div class="logo">DRAMA<span>HUB</span><small>WATCH • FEEL • REPEAT</small></div></div>
+  <div class="search"><input id="searchInput" placeholder="Search dramas..." aria-label="Search dramas"></div>
+  <div class="avatar">D</div>
+ </div>
+ <nav id="desktopNav">
+  <button class="active" data-page="home">Home</button><button data-page="shorts">Shorts</button><button data-page="series">Web Series</button><button data-page="creator">Creator</button><button data-page="admin">Admin</button><button data-page="profile">Profile</button>
+ </nav>
+</header>
+<main id="app">
+<section id="homePage">
+ <div class="home-intro"><div><div class="eyebrow">YOUR ENTERTAINMENT DESTINATION</div><h1>Discover dramas</h1></div><span class="live-pill">● TRENDING NOW</span></div>
+ <div class="section-head"><h2>Browse Categories</h2><small>Explore your mood</small></div>
+ <div class="chips" id="categoryChips"><button class="chip active" data-category="All">All</button><button class="chip" data-category="Romance">Romance</button><button class="chip" data-category="Thriller">Thriller</button><button class="chip" data-category="Comedy">Comedy</button><button class="chip" data-category="Action">Action</button><button class="chip" data-category="Horror">Horror</button><button class="chip" data-category="Family">Family</button></div>
+ <div class="section-head"><h2>Trending Dramas</h2><small>Updated for you</small></div><div class="grid" id="dramaGrid"></div>
+ <div class="section-head"><h2>Quick Short Dramas</h2><small>Vertical • bite-sized</small></div><div class="short-row" id="shortRow"></div>
+</section>
+<section id="shortsPage" hidden><div class="section-head"><h2>Short Drama</h2><small>Vertical 9:16 experience</small></div><p class="muted">Quick stories made for mobile viewing. Select a title to open its preview card.</p><div class="grid" id="shortGrid"></div></section>
+<section id="seriesPage" hidden><div class="section-head"><h2>Web Series</h2><small>Landscape & portrait episodes</small></div><div class="grid" id="seriesGrid"></div></section>
+<section id="creatorPage" hidden>
+ <div class="panel">
+  <div class="eyebrow">SECURE CREATOR ACCOUNT</div><h2>Creator sign up / login</h2>
+  <p class="muted">Apna email aur password use karo. Signup ke baad email verification link aa sakta hai. Login ke baad hi Creator Studio use hoga.</p>
+  <div class="form-grid">
+   <div class="field full"><label>Creator display name (signup ke liye)</label><input id="creatorName" placeholder="Your creator name"></div>
+   <div class="field full"><label>Email address</label><input id="creatorEmail" type="email" autocomplete="email" placeholder="you@example.com"></div>
+   <div class="field full"><label>Password (minimum 8 characters)</label><input id="creatorPassword" type="password" autocomplete="new-password" minlength="8" placeholder="Create a strong password"></div>
+   <div class="field"><button class="primary" type="button" onclick="signUpCreator()">Create account</button></div>
+   <div class="field"><button class="secondary" type="button" onclick="signInCreator()">Login</button></div>
+   <div class="field full"><button type="button" class="secondary" onclick="signOutCreator()">Logout</button></div>
+  </div>
+  <p id="creatorWelcome" class="muted" aria-live="polite">Checking account status…</p>
+  <p id="authMessage" class="muted" aria-live="polite"></p>
+ </div>
+ <div class="panel"><div class="eyebrow">CREATOR STUDIO</div><h2>Upload your story</h2><p class="muted">Create a series, add episodes and submit your video for review.</p>
+ <form id="uploadForm" class="form-grid">
+  <div class="field"><label>Drama / Series title</label><input id="uploadTitle" required placeholder="e.g. Dil Ki Dhadkan"></div>
+  <div class="field"><label>Category</label><select id="uploadCategory"><option>Romance</option><option>Thriller</option><option>Comedy</option><option>Action</option><option>Horror</option><option>Family</option></select></div>
+  <div class="field"><label>Video format</label><select id="uploadFormat"><option>Vertical 9:16</option><option>Landscape 16:9</option></select></div>
+  <div class="field"><label>Episode number</label><input id="uploadEpisode" type="number" min="1" value="1"></div>
+  <div class="field full"><label>Description</label><textarea id="uploadDescription" placeholder="Tell viewers what this episode is about..."></textarea></div>
+  <div class="field full"><label>Video file (local preview only)</label><input type="file" accept="video/*" id="videoFile"></div><div class="field full"><video id="localVideoPreview" controls playsinline hidden style="width:100%;max-height:260px;border-radius:12px;background:#000"></video></div>
+  <div class="field full"><button class="primary" type="submit">Submit for Review</button></div>
+ </form>
+ <div class="notice">Creator submission details are saved in the Supabase database. The selected video is only previewed on this device; it is NOT uploaded or streamed yet. Video hosting will be a separate next phase. Only submit videos you own or have permission to distribute.</div>
+ <div class="panel"><h2>My submissions</h2><div id="creatorSubmissionList" class="submission-list"><div class="empty">No submissions yet.</div></div></div>
+ </div>
+ <div class="panel"><h2>Creator checklist</h2><p class="muted">✓ Use original or licensed content<br>✓ Add a clear title and description<br>✓ Choose the correct video format<br>✓ Submit for admin review before publishing</p></div>
+</section>
+<section id="adminPage" hidden>
+ <div class="dashboard-head">
+  <div><div class="eyebrow">CONTROL CENTER</div><h1>Admin Dashboard</h1><p class="muted">Review creator submissions and manage the DramaHub catalogue.</p></div>
+  <span class="admin-state">DEMO ADMIN</span>
+ </div>
+ <div class="stats-grid">
+  <div class="stat-card"><span>Total titles</span><b id="statTitles">8</b><small>Sample catalogue</small></div>
+  <div class="stat-card"><span>Pending review</span><b id="statPending">0</b><small>Awaiting approval</small></div>
+  <div class="stat-card"><span>Published</span><b id="statPublished">8</b><small>Demo titles</small></div>
+ </div>
+ <div class="panel">
+  <div class="panel-title-row"><div><h2>Creator submissions</h2><p class="muted">Approve or reject creator-submitted titles.</p></div><button class="secondary compact" onclick="refreshAdmin()">↻ Refresh</button></div>
+  <div id="submissionList" class="submission-list"><div class="empty">No creator submissions yet.</div></div>
+ </div>
+ <div class="panel">
+  <h2>Admin safety checklist</h2>
+  <p class="muted">Check ownership or distribution permission, review the title and thumbnail, and reject harmful or infringing content before publishing.</p>
+  <div class="notice">This is a front-end demo. The demo admin screen is not protected by a real server login. Never use it to manage public uploads or payments until server-side authentication and authorization are connected.</div>
+ </div>
+</section>
+<section id="profilePage" hidden><div class="panel"><div class="eyebrow">YOUR ACCOUNT</div><h2>Welcome to DramaHub</h2><p class="muted">Sign-in, watch history, saved dramas and subscription settings will be enabled when authentication is connected.</p><button class="primary" onclick="showPage('creator')">Sign in / Create account</button></div><div class="panel"><h2>My Watchlist</h2><p class="muted">Your saved shows will appear here after login is enabled.</p></div></section>
+</main>
+<div class="bottom" id="bottomNav"><button class="active" data-page="home"><span>⌂</span>Home</button><button data-page="shorts"><span>▣</span>Shorts</button><button data-page="series"><span>▤</span>Series</button><button data-page="creator"><span>＋</span>Create</button><button data-page="admin"><span>▦</span>Admin</button><button data-page="profile"><span>●</span>Profile</button></div>
+<footer>DRAMAHUB • Independent drama streaming platform • Supabase-connected build 0.5</footer>
+<script>
+const dramas=[
+ {title:"Ishq Wala Promise",cat:"Romance",format:"Landscape + Vertical",type:"SERIES",tone:""},
+ {title:"The Last Secret",cat:"Thriller",format:"Landscape",type:"SERIES",tone:"t2"},
+ {title:"Roommate No. 1",cat:"Comedy",format:"Vertical",type:"SHORT",tone:"t3"},
+ {title:"Shadow Mission",cat:"Action",format:"Landscape",type:"SERIES",tone:"t4"},
+ {title:"Haveli Ka Raaz",cat:"Horror",format:"Vertical",type:"SHORT",tone:"t5"},
+ {title:"Apno Ka Aangan",cat:"Family",format:"Landscape",type:"SERIES",tone:"t6"},
+ {title:"One Last Chance",cat:"Romance",format:"Vertical",type:"SHORT",tone:"t2"},
+ {title:"Midnight Call",cat:"Thriller",format:"Landscape",type:"SERIES",tone:"t3"}
+];
+function card(d,i){return `<article class="card"><div class="poster ${d.tone}"><span class="tag">${d.type} • ${d.format.includes('Vertical')?'9:16':'16:9'}</span><b>${d.title}</b></div><div class="card-info"><strong>${d.title}</strong><div class="meta">${d.cat} • ${d.format}</div><button onclick="preview('${d.title.replace(/'/g,"\\'")}')">▶ View details</button></div></article>`}
+function render(){
+ const q=document.getElementById('searchInput').value.toLowerCase();
+ const active=document.querySelector('.chip.active')?.dataset.category||'All';
+ const filtered=dramas.filter(d=>(active==='All'||d.cat===active)&&d.title.toLowerCase().includes(q));
+ document.getElementById('dramaGrid').innerHTML=filtered.filter(d=>d.type==='SERIES').map(card).join('')||'<div class="empty">No dramas found.</div>';
+ document.getElementById('shortRow').innerHTML=dramas.filter(d=>d.type==='SHORT').map((d,i)=>`<div class="short">${card(d,i)}</div>`).join('');
+ document.getElementById('shortGrid').innerHTML=dramas.filter(d=>d.type==='SHORT').map(card).join('');
+ document.getElementById('seriesGrid').innerHTML=dramas.filter(d=>d.type==='SERIES').map(card).join('');
+}
+function preview(title){alert(title+'\\n\\nThis is a UI preview. Video playback will be connected after the secure video backend is built.')}
+function showPage(page){
+ ['home','shorts','series','creator','admin','profile'].forEach(p=>document.getElementById(p+'Page').hidden=p!==page);
+ document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+document.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));b.classList.add('active');render()}));
+document.getElementById('searchInput').addEventListener('input',render);
+// Supabase public project settings. Publishable key is safe for browser use; never put a service_role/secret key here.
+const SUPABASE_URL='https://pqypirvkhvxctiutlwll.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_ov6hp7SDe4SM3KNLfR2U_g_AAID_4CS';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+let currentUser = null;
+async function updateAuthUI(){
+ const {data:{user},error}=await supabaseClient.auth.getUser();
+ currentUser=user||null;
+ const welcome=document.getElementById('creatorWelcome');
+ welcome.textContent=error?'Account status could not be checked.':(user?'Logged in: '+user.email:'Not logged in. Please create an account or login.');
+ document.getElementById('creatorName').disabled=!!user;
+ document.getElementById('creatorEmail').value=user?.email||document.getElementById('creatorEmail').value;
+ refreshCreatorSubmissions();
+}
+function authMsg(msg){document.getElementById('authMessage').textContent=msg;}
+async function signUpCreator(){
+ const name=document.getElementById('creatorName').value.trim();
+ const email=document.getElementById('creatorEmail').value.trim();
+ const password=document.getElementById('creatorPassword').value;
+ if(!name||!email||password.length<8){authMsg('Display name, valid email aur minimum 8-character password enter karo.');return;}
+ const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{display_name:name}}});
+ if(error){authMsg('Signup error: '+error.message);return;}
+ authMsg(data.session?'Account created and logged in.':'Account created. Email inbox/spam check karke verification link par click karo, phir login karo.');
+ await updateAuthUI();
+}
+async function signInCreator(){
+ const email=document.getElementById('creatorEmail').value.trim();
+ const password=document.getElementById('creatorPassword').value;
+ if(!email||!password){authMsg('Email aur password enter karo.');return;}
+ const {error}=await supabaseClient.auth.signInWithPassword({email,password});
+ if(error){authMsg('Login error: '+error.message);return;}
+ authMsg('Login successful. Creator Studio ready.');await updateAuthUI();
+}
+async function signOutCreator(){
+ const {error}=await supabaseClient.auth.signOut();
+ authMsg(error?'Logout error: '+error.message:'You are logged out.');await updateAuthUI();
+}
+supabaseClient.auth.onAuthStateChange(()=>{setTimeout(updateAuthUI,0);});
+async function refreshAdmin(){
+ document.getElementById('submissionList').innerHTML='<div class="notice">Admin moderation is not connected yet. This demo dashboard is not authorized to approve/reject real database submissions.</div>';
+ document.getElementById('statPending').textContent='—';
+}
+async function refreshCreatorSubmissions(){
+ const list=document.getElementById('creatorSubmissionList');
+ if(!currentUser){list.innerHTML='<div class="empty">Login to view your submissions.</div>';return;}
+ const {data,error}=await supabaseClient.from('creator_submissions').select('id,title,category,format,episode,description,status,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false});
+ if(error){list.innerHTML='<div class="notice">Could not load submissions: '+escapeHTML(error.message)+'</div>';return;}
+ if(!data.length){list.innerHTML='<div class="empty">No submissions yet.</div>';return;}
+ list.innerHTML=data.map(x=>`<div class="submission"><div class="submission-top"><div><strong>${escapeHTML(x.title)}</strong><p>${escapeHTML(x.category)} • ${escapeHTML(x.format)} • Episode ${x.episode}<br>${escapeHTML(x.description||'No description')}</p></div><span class="status ${escapeHTML(x.status)}">${escapeHTML(x.status.toUpperCase())}</span></div></div>`).join('');
+}
+function escapeHTML(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+document.getElementById('videoFile').addEventListener('change',e=>{
+ const file=e.target.files&&e.target.files[0], video=document.getElementById('localVideoPreview');
+ if(!file){video.hidden=true;return}
+ if(!file.type.startsWith('video/')){alert('Please choose a video file.');e.target.value='';video.hidden=true;return}
+ video.src=URL.createObjectURL(file);video.hidden=false;
+});
+document.getElementById('uploadForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ if(!currentUser){alert('Pehle Creator account se login karo.');return;}
+ const title=document.getElementById('uploadTitle').value.trim();
+ const item={user_id:currentUser.id,title,category:document.getElementById('uploadCategory').value,format:document.getElementById('uploadFormat').value,episode:Number(document.getElementById('uploadEpisode').value)||1,description:document.getElementById('uploadDescription').value.trim()};
+ const {error}=await supabaseClient.from('creator_submissions').insert(item);
+ if(error){alert('Submission error: '+error.message);return;}
+ alert('Submission details Supabase database mein save ho gayi. Video file abhi upload nahi hui hai.');
+ e.target.reset();document.getElementById('localVideoPreview').hidden=true;await refreshCreatorSubmissions();
+});
+render();refreshAdmin();updateAuthUI();
+window.addEventListener('load',()=>{setTimeout(()=>document.getElementById('splash').classList.add('hide'),1800);});
+setTimeout(()=>document.getElementById('splash')?.classList.add('hide'),3500);
+</script>
+</body>
+</html>
